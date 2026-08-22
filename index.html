@@ -26,8 +26,29 @@
     .meta { font-size: 12px; color: #aaa; margin-bottom: 12px; }
     .score-tag { background: rgba(255,0,0,0.15); color: #ff4444; padding: 4px 8px; border-radius: 4px; font-size: 11px; font-weight: bold; display: inline-block; margin-bottom: 8px; }
 
-    .copy-btn { width: 100%; padding: 10px; background: #2d2d2d; color: white; border: none; border-radius: 6px; cursor: pointer; }
-    .copy-btn:hover { background: #ff0000; }
+    .button-row {
+  display: flex;
+  gap: 10px;        /* space between buttons */
+  margin-top: 10px;
+}
+
+.copy-btn,
+.watch-btn {
+  flex: 1;          /* each button takes up equal space */
+  padding: 10px;
+  background: #2d2d2d;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.copy-btn:hover,
+.watch-btn:hover {
+  background: #ff0000;
+}
+
     /* Info Button */
 #infoButton {
   position: fixed;
@@ -106,9 +127,14 @@
   border: 1px solid #ff0000;
   border-radius: 6px;
   cursor: pointer;
-  font-size: 14px;
+  font-size: 20px;
   transition: 0.2s;
-  font-weight: bold
+  font-weight: bold;
+  display: block;
+  width: 100%; 
+  height: 100px;
+  margin-left: auto;
+  margin-right: auto;
 }
 
 #refreshBtn:hover {
@@ -134,6 +160,124 @@
   color: white;
   transform: translateY(-2px);
 }
+/* Popup background */
+#playerModal {
+  display: none;
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0,0,0,0.85);
+  z-index: 9999;
+}
+
+/* Popup content box */
+#playerContent {
+  background: #1f1f1f;
+  width: 90%;
+  max-width: 800px;
+  margin: 80px auto;
+  padding: 20px;
+  border-radius: 12px;
+  position: relative;
+}
+
+/* Close button */
+#closePlayer {
+  position: absolute;
+  top: 10px;
+  right: 15px;
+  font-size: 32px;
+  cursor: pointer;
+  color: #ccc;
+}
+#closePlayer:hover {
+  color: white;
+}
+
+/* Video iframe */
+#playerFrame {
+  width: 100%;
+  height: 450px;
+  border: none;
+  border-radius: 8px;
+}
+
+#customizeBtn {
+  padding: 8px 14px;
+  background: #2d2d2d;
+  color: white;
+  border: 1px solid #555;
+  border-radius: 6px;
+  cursor: pointer;
+  margin-left: 10px;
+}
+
+#customizeBtn:hover {
+  background: #444;
+}
+
+#customizeModal {
+  display: none;
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0,0,0,0.85);
+  z-index: 9999;
+}
+
+#customizeContent {
+  background: #1f1f1f;
+  width: 90%;
+  max-width: 600px;
+  margin: 80px auto;
+  padding: 20px;
+  border-radius: 12px;
+  position: relative;
+}
+
+#closeCustomize {
+  position: absolute;
+  top: 10px;
+  right: 15px;
+  font-size: 32px;
+  cursor: pointer;
+  color: #ccc;
+}
+
+#closeCustomize:hover {
+  color: white;
+}
+
+#topicsInput {
+  width: 96%;
+  height: 200px;
+  background: #2d2d2d;
+  color: white;
+  border: 1px solid #555;
+  border-radius: 6px;
+  padding: 10px;
+  font-size: 14px;
+}
+
+#saveTopicsBtn {
+  margin-top: 15px;
+  padding: 10px 16px;
+  background: #444;
+  color: white;
+  border: 1px solid #888;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 14px;
+}
+
+#saveTopicsBtn:hover {
+  background: #666;
+}
+
 
 </style>
 </head>
@@ -141,6 +285,8 @@
 <body>
 <!-- Info Button -->
 <div id="infoButton">ℹ️</div>
+<button id="customizeBtn">Customize</button>
+
 
 <!-- Popup Modal -->
 <div id="infoModal">
@@ -148,10 +294,26 @@
     <span id="closeInfo">&times;</span>
     <section>
       <h1>How To Use GiggleTube (for Snelson):</h1>
-      <p>Browse or search for videos you want to see and click "Copy Link". Then go to an empty Canva presentation and paste in the video to watch it.</p>
+      <p>Browse or search for videos you want to see and click "Copy Link". Then go to an empty Canva presentation and paste in the video to watch it.
+        Alternatively, you can click "Watch Video" to watch in GiggleTube.
+      </p>
     </section>
   </div>
 </div>
+
+<div id="customizeModal">
+  <div id="customizeContent">
+    <span id="closeCustomize">&times;</span>
+
+    <h2>Customize Feed Topics</h2>
+    <p>Enter one topic per line:</p>
+
+    <textarea id="topicsInput"></textarea>
+
+    <button id="saveTopicsBtn">Save & Refresh Feed</button>
+  </div>
+</div>
+
 
 <script>
   const infoButton = document.getElementById("infoButton");
@@ -180,12 +342,20 @@
 <div class="search-container">
     <input type="text" class="search-input" id="searchBar" placeholder="Search anything...">
     <button class="search-btn" id="searchBtn" onclick="executeLiveSearch()">Search</button>
-    <button id="refreshBtn" onclick="refreshFeed()">Refresh Feed</button>
+    
+</div>
+
+<!-- WATCH VIDEO POPUP -->
+<div id="playerModal">
+  <div id="playerContent">
+    <span id="closePlayer">&times;</span>
+    <iframe id="playerFrame" allowfullscreen></iframe>
+  </div>
 </div>
 
 
-
 <div class="grid" id="videoGrid"></div>
+
 
 <script>
 /* ============================================================
@@ -197,6 +367,53 @@ const INV_INSTANCES = [
     "https://invidious.projectsegfau.com/api/v1", 
     "https://invidious.privacydev.net/api/v1"
 ];
+let FEED_TOPICS = [
+    "splatoon",
+    "failboat",
+    "jaymoji",
+    "geometry dash",
+    "gaming",
+    "tech review",
+    "pc build",
+    "horror game",
+    "analogue horror",
+    "backrooms"
+];
+
+// Open customize modal
+document.getElementById("customizeBtn").onclick = () => {
+    document.getElementById("topicsInput").value = FEED_TOPICS.join("\n");
+    document.getElementById("customizeModal").style.display = "block";
+};
+
+// Close modal
+document.getElementById("closeCustomize").onclick = () => {
+    document.getElementById("customizeModal").style.display = "none";
+};
+
+// Save topics + refresh feed
+document.getElementById("saveTopicsBtn").onclick = () => {
+    const raw = document.getElementById("topicsInput").value;
+
+    // Split by newlines, trim, remove empty lines
+    FEED_TOPICS = raw
+        .split("\n")
+        .map(t => t.trim())
+        .filter(t => t.length > 0);
+
+    document.getElementById("customizeModal").style.display = "none";
+
+    // Reload feed with new topics
+    loadBaselineFeed(true);
+};
+
+// Close modal when clicking outside
+window.onclick = (e) => {
+    if (e.target === document.getElementById("customizeModal")) {
+        document.getElementById("customizeModal").style.display = "none";
+    }
+};
+
 
 async function fetchFromInvidious(endpoint) {
     for (const base of INV_INSTANCES) {
@@ -217,6 +434,24 @@ async function fetchFromInvidious(endpoint) {
     return await response.json();
 }
 
+function watchVideo(id) {
+    const frame = document.getElementById("playerFrame");
+    frame.src = "https://www.youtube-nocookie.com/embed/" + id;
+
+    document.getElementById("playerModal").style.display = "block";
+}
+
+document.getElementById("closePlayer").onclick = () => {
+    document.getElementById("playerModal").style.display = "none";
+    document.getElementById("playerFrame").src = "";
+};
+
+window.onclick = (e) => {
+    if (e.target === document.getElementById("playerModal")) {
+        document.getElementById("playerModal").style.display = "none";
+        document.getElementById("playerFrame").src = "";
+    }
+};
 
 
 /* ============================================================
@@ -241,6 +476,36 @@ function inferCategory(text) {
     if (t.includes("cook") || t.includes("food") || t.includes("chef")) return "cooking";
     if (t.includes("music") || t.includes("lofi") || t.includes("song")) return "music";
     if (t.includes("science") || t.includes("tech") || t.includes("how")) return "science";
+    // Gaming
+    if (
+        t.includes("game") ||
+        t.includes("gaming") ||
+        t.includes("splatoon") ||
+        t.includes("failboat") ||
+        t.includes("jaymoji") ||
+        t.includes("gd") ||
+        t.includes("geometry dash")
+    ) return "gaming";
+
+    // Tech
+    if (
+        t.includes("tech") ||
+        t.includes("review") ||
+        t.includes("unboxing") ||
+        t.includes("pc build") ||
+        t.includes("setup")
+    ) return "tech";
+
+    // Horror
+    if (
+        t.includes("horror") ||
+        t.includes("analogue") ||
+        t.includes("analog") ||
+        t.includes("creepy") ||
+        t.includes("scary") ||
+        t.includes("backrooms")
+    ) return "horror";
+
     return "general";
 }
 
@@ -269,51 +534,92 @@ async function loadBaselineFeed(isRefresh = false) {
     const status = document.getElementById("status");
 
     grid.innerHTML = "<p>Loading...</p>";
-    status.innerText = isRefresh ? "Refreshing feed..." : "Loading baseline recommendations...";
+    status.innerText = isRefresh ? "Refreshing feed..." : "Loading recommendations...";
 
     try {
-        const results = await fetchFromInvidious(`/trending`);
+        // 1. Run all searches in parallel
+        const searchPromises = FEED_TOPICS.map(async topic => {
+            try {
+                console.log("Searching topic:", topic);
+                const res = await fetchFromInvidious(`/search?q=${encodeURIComponent(topic)}`);
+                return res.filter(v => v.type === "video");
+            } catch (e) {
+                console.error("Failed topic:", topic, e);
+                return []; // fail soft for this topic
+            }
+        });
 
-        const processed = results
-            .filter(v => v.type === "video")
-            .map(v => {
-                const category = inferCategory(v.title);
+        const resultsByTopic = await Promise.all(searchPromises);
 
-                let score = 0;
+        // 2. Flatten results
+        let allResults = [];
+        resultsByTopic.forEach(list => allResults.push(...list));
 
-                score += Math.random() * 100;
+        // 3. Deduplicate by videoId
+        const unique = {};
+        allResults.forEach(v => {
+            if (v.videoId) unique[v.videoId] = v;
+        });
+        const videos = Object.values(unique);
 
-                if (v.published) {
-                    const ageDays = (Date.now() - new Date(v.published).getTime()) / 86400000;
-                    score += Math.max(0, 50 - ageDays);
-                }
+        // 4. Score videos
+        let processed = videos.map(v => {
+    const category = inferCategory(v.title || "");
+    const author = (v.author || "").toLowerCase();
+    const length = v.lengthSeconds || 0;
 
-                if (v.viewCount) {
-                    if (v.viewCount < 50000) score += 40;
-                    else if (v.viewCount < 500000) score += 20;
-                    else score -= 20;
-                }
+    let score = 0;
 
-                if (category === "music") score += 30;
-                if (category === "science") score += 20;
+    // Category boosts
+    if (category === "gaming") score += 100;
+    if (category === "tech") score += 100;
+    if (category === "horror") score += 120;
+    if (category === "general") score -= 10;
 
-                if (v.lengthSeconds > 1800) score -= 40;
+    // Creator boosts
+    if (author.includes("failboat")) score += 150;
+    if (author.includes("jaymoji")) score += 150;
+    if (author.includes("geometry")) score += 150;
 
-                return {
-                    id: v.videoId,
-                    title: v.title,
-                    author: v.author,
-                    thumbnail: v.videoThumbnails?.[0]?.url ||
-                        `https://i.ytimg.com/vi/${v.videoId}/mqdefault.jpg`,
-                    lengthSeconds: v.lengthSeconds || 0,
-                    category,
-                    finalScore: score
-                };
-            })
-            .sort((a, b) => b.finalScore - a.finalScore);
+    // Minimal length bias
+    if (length === 0) score -= 200;
 
+    // Stronger randomness
+    score += Math.random() * 50;
+
+    return {
+        id: v.videoId,
+        title: v.title || "Untitled",
+        author: v.author || "Unknown",
+        thumbnail: v.videoThumbnails?.[0]?.url ||
+            `https://i.ytimg.com/vi/${v.videoId}/mqdefault.jpg`,
+        lengthSeconds: length,
+        category,
+        finalScore: score
+    };
+})
+.filter(v => v.finalScore > 5);
+
+// Shuffle results (Fisher–Yates)
+for (let i = processed.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [processed[i], processed[j]] = [processed[j], processed[i]];
+}
+
+// Limit to 30 results
+processed = processed.slice(0, 50);
+
+
+        // 5. Render
         grid.innerHTML = "";
-        status.innerText = isRefresh ? "Feed refreshed!" : "Trending videos right now";
+
+        if (processed.length === 0) {
+            status.innerText = "No videos found for these topics.";
+            grid.innerHTML = "<p>Try refreshing or changing topics.</p>";
+            return;
+        }
+
+        status.innerText = isRefresh ? "Feed refreshed!" : "Recommended videos";
 
         processed.forEach(video => {
             const card = document.createElement("div");
@@ -331,10 +637,12 @@ async function loadBaselineFeed(isRefresh = false) {
 
                 <h3>${video.title}</h3>
 
-                <div>
-                    <div class="score-tag">Score: ${Math.round(video.finalScore)}</div>
-                    <p class="meta">👤 ${video.author}<br>🏷️ ${video.category}</p>
+                <div class="score-tag">Score: ${Math.round(video.finalScore)}</div>
+                <p class="meta">👤 ${video.author}<br>🏷️ ${video.category}</p>
+
+                <div class="button-row">
                     <button class="copy-btn" onclick="copyVideoLink('${video.id}', this)">Copy Link</button>
+                    <button class="watch-btn" onclick="watchVideo('${video.id}')">Watch Video</button>
                 </div>
             `;
 
@@ -342,11 +650,15 @@ async function loadBaselineFeed(isRefresh = false) {
         });
 
     } catch (err) {
-        console.error(err);
-        status.innerText = "Could not load recommendations.";
+        console.error("Baseline feed error:", err);
+        status.innerText = "Could not load feed.";
         grid.innerHTML = "<p>Try again later.</p>";
     }
 }
+
+
+
+
 
 /* ============================================================
    REFRESH BUTTON
@@ -412,7 +724,12 @@ async function executeLiveSearch() {
                 <div>
                     <div class="score-tag">Match Rating: ${video.finalScore} pts</div>
                     <p class="meta">👤 ${video.author}<br>🏷️ ${video.category}</p>
-                    <button class="copy-btn" onclick="copyVideoLink('${video.id}', this)">Copy Link</button>
+                    <div class="button-row">
+    <button class="copy-btn" onclick="copyVideoLink('${video.id}', this)">Copy Link</button>
+    <button class="watch-btn" onclick="watchVideo('${video.id}')">Watch Video</button>
+</div>
+
+
                 </div>
             `;
 
@@ -432,4 +749,5 @@ async function executeLiveSearch() {
 
 window.addEventListener("DOMContentLoaded", loadBaselineFeed);
 </script>
-</html>
+<button id="refreshBtn" onclick="refreshFeed()">Refresh Feed</button>
+</html> 
