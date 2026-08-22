@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Live Multi-Topic Recommendation Engine</title>
+<title>GiggleTube</title>
 
 <style>
     body { font-family: Arial, sans-serif; background: #0f0f0f; color: #f1f1f1; padding: 20px; margin: 0; }
@@ -28,18 +28,162 @@
 
     .copy-btn { width: 100%; padding: 10px; background: #2d2d2d; color: white; border: none; border-radius: 6px; cursor: pointer; }
     .copy-btn:hover { background: #ff0000; }
+    /* Info Button */
+#infoButton {
+  position: fixed;
+  top: 15px;
+  right: 15px;
+  background: #ff0000;
+  color: white;
+  font-size: 20px;
+  padding: 7px 8px;
+  border-radius: 50%;
+  cursor: pointer;
+  z-index: 1000;
+  transition: background 0.2s;
+}
+#infoButton:hover {
+  background: #cc0000;
+}
+
+/* Modal Background */
+#infoModal {
+  display: none; 
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0,0,0,0.7);
+  z-index: 999;
+}
+
+/* Modal Content Box */
+#infoContent {
+  background: #1f1f1f;
+  color: white;
+  width: 90%;
+  max-width: 500px;
+  margin: 120px auto;
+  padding: 25px;
+  border-radius: 12px;
+  position: relative;
+  animation: fadeIn 0.3s ease;
+}
+
+/* Close Button */
+#closeInfo {
+  position: absolute;
+  top: 10px;
+  right: 15px;
+  font-size: 28px;
+  cursor: pointer;
+  color: #aaa;
+}
+#closeInfo:hover {
+  color: white;
+}
+
+/* Fade-in animation */
+@keyframes fadeIn {
+  from { opacity: 0; transform: scale(0.95); }
+  to { opacity: 1; transform: scale(1); }
+}
+
+/* Keep everything aligned in one row */
+.search-container {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  flex-wrap: wrap; /* prevents weird wrapping */
+}
+
+/* Refresh button styling */
+#refreshBtn {
+  padding: 12px 20px;
+  background: #2d2d2d;
+  color: white;
+  border: 1px solid #ff0000;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 14px;
+  transition: 0.2s;
+  font-weight: bold
+}
+
+#refreshBtn:hover {
+  background: #ff0000;
+  color: white;
+  transform: translateY(-2px);
+}
+
+/* Refresh button styling */
+#searchBtn {
+  padding: 12px 20px;
+  background: #2d2d2d;
+  color: white;
+  border: 1px solid #ff0000;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 14px;
+  transition: 0.2s;
+}
+
+#searchBtn:hover {
+  background: #ff0000;
+  color: white;
+  transform: translateY(-2px);
+}
+
 </style>
 </head>
 
 <body>
+<!-- Info Button -->
+<div id="infoButton">ℹ️</div>
 
-<h1>🤖 Live Multi-Topic Recommendation Engine</h1>
+<!-- Popup Modal -->
+<div id="infoModal">
+  <div id="infoContent">
+    <span id="closeInfo">&times;</span>
+    <section>
+      <h1>How To Use GiggleTube (for Snelson):</h1>
+      <p>Browse or search for videos you want to see and click "Copy Link". Then go to an empty Canva presentation and paste in the video to watch it.</p>
+    </section>
+  </div>
+</div>
+
+<script>
+  const infoButton = document.getElementById("infoButton");
+  const infoModal = document.getElementById("infoModal");
+  const closeInfo = document.getElementById("closeInfo");
+
+  infoButton.onclick = () => {
+    infoModal.style.display = "block";
+  };
+
+  closeInfo.onclick = () => {
+    infoModal.style.display = "none";
+  };
+
+  window.onclick = (e) => {
+    if (e.target === infoModal) {
+      infoModal.style.display = "none";
+    }
+  };
+</script>
+
+
+<h1>GiggleTube</h1>
 <div class="subtitle" id="status">Loading baseline recommendations...</div>
 
 <div class="search-container">
-    <input type="text" class="search-input" id="searchBar" placeholder="Search anything (e.g., cooking masterclass, gaming tricks, lofi, science)...">
-    <button class="search-btn" onclick="executeLiveSearch()">Search Live</button>
+    <input type="text" class="search-input" id="searchBar" placeholder="Search anything...">
+    <button class="search-btn" id="searchBtn" onclick="executeLiveSearch()">Search</button>
+    <button id="refreshBtn">Refresh Feed</button>
 </div>
+
+
 
 <div class="grid" id="videoGrid"></div>
 
@@ -54,6 +198,8 @@ function copyVideoLink(id, btn) {
         setTimeout(() => btn.innerText = "Copy Link", 1500);
     });
 }
+
+
 
 // ⭐ Category inference (simple)
 function inferCategory(text) {
@@ -79,31 +225,64 @@ function scoreVideo(video, query) {
 }
 
 // ⭐ Baseline trending feed
-async function loadBaselineFeed() {
+async function loadBaselineFeed(isRefresh = false) {
     const grid = document.getElementById("videoGrid");
     const status = document.getElementById("status");
 
     grid.innerHTML = "<p>Loading...</p>";
+    status.innerText = isRefresh ? "Refreshing feed..." : "Loading baseline recommendations...";
 
     try {
         const response = await fetch(`${INV_BASE}/trending`);
         const results = await response.json();
 
+        // ⭐ Algorithmic scoring
         const processed = results
             .filter(v => v.type === "video")
-            .map(v => ({
-                id: v.videoId,
-                title: v.title,
-                author: v.author,
-                thumbnail: v.videoThumbnails?.[0]?.url ||
-                    `https://i.ytimg.com/vi/${v.videoId}/mqdefault.jpg`,
-                lengthSeconds: v.lengthSeconds || 0,
-                category: inferCategory(v.title),
-                finalScore: 100
-            }));
+            .map(v => {
+                const category = inferCategory(v.title);
+
+                // Build a dynamic score
+                let score = 0;
+
+                // Randomness (makes refresh different)
+                score += Math.random() * 100;
+
+                // Boost newer videos
+                if (v.published) {
+                    const ageDays = (Date.now() - new Date(v.published).getTime()) / 86400000;
+                    score += Math.max(0, 50 - ageDays); // newer = higher score
+                }
+
+                // Boost mid‑view videos (not too popular, not too small)
+                if (v.viewCount) {
+                    if (v.viewCount < 50000) score += 40;
+                    else if (v.viewCount < 500000) score += 20;
+                    else score -= 20;
+                }
+
+                // Boost certain categories
+                if (category === "music") score += 30;
+                if (category === "science") score += 20;
+
+                // Penalize very long videos
+                if (v.lengthSeconds > 1800) score -= 40;
+
+                return {
+                    id: v.videoId,
+                    title: v.title,
+                    author: v.author,
+                    thumbnail: v.videoThumbnails?.[0]?.url ||
+                        `https://i.ytimg.com/vi/${v.videoId}/mqdefault.jpg`,
+                    lengthSeconds: v.lengthSeconds || 0,
+                    category,
+                    finalScore: score
+                };
+            })
+            .sort((a, b) => b.finalScore - a.finalScore); // highest score first
 
         grid.innerHTML = "";
-        status.innerText = "Trending videos right now";
+        status.innerText = isRefresh ? "Feed refreshed!" : "Trending videos right now";
 
         processed.forEach(video => {
             const card = document.createElement("div");
@@ -122,6 +301,7 @@ async function loadBaselineFeed() {
                 <h3>${video.title}</h3>
 
                 <div>
+                    <div class="score-tag">Score: ${Math.round(video.finalScore)}</div>
                     <p class="meta">👤 ${video.author}<br>🏷️ ${video.category}</p>
                     <button class="copy-btn" onclick="copyVideoLink('${video.id}', this)">Copy Link</button>
                 </div>
@@ -132,9 +312,13 @@ async function loadBaselineFeed() {
 
     } catch (err) {
         console.error(err);
-        status.innerText = "Could not load baseline recommendations.";
+        status.innerText = "Could not load recommendations.";
         grid.innerHTML = "<p>Try again later.</p>";
     }
+}
+
+function refreshFeed() {
+    loadBaselineFeed(true); // pass true to indicate refresh mode
 }
 
 // ⭐ Live search feed
