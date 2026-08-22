@@ -160,6 +160,25 @@
   color: white;
   transform: translateY(-2px);
 }
+
+#refresh {
+  padding: 12px 20px;
+  background: #2d2d2d;
+  color: white;
+  border: 1px solid #ff0000;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: bold;
+  transition: 0.2s;
+}
+
+#refresh:hover {
+  background: #ff0000;
+  color: white;
+  transform: translateY(-2px);
+}
+
 /* Popup background */
 #playerModal {
   display: none;
@@ -342,7 +361,7 @@
 <div class="search-container">
     <input type="text" class="search-input" id="searchBar" placeholder="Search anything...">
     <button class="search-btn" id="searchBtn" onclick="executeLiveSearch()">Search</button>
-    
+    <button id="refresh" onclick="refreshFeed()">Refresh Feed</button>
 </div>
 
 <!-- WATCH VIDEO POPUP -->
