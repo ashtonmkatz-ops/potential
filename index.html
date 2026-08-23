@@ -574,6 +574,14 @@ function scoreVideo(video, query) {
     if (video.category === "music" || video.category === "science") score += 60;
     if (video.lengthSeconds < 400) score -= 30;
 
+    const now = Date.now() / 1000; // seconds
+    const ageDays = (now - video.published) / 86400;
+
+    // Newer videos get up to +25 points, older ones get ~0
+    const recencyBonus = Math.max(0, 25 - ageDays * 0.5);
+    score += recencyBonus;
+
+
     return score;
 }
 
