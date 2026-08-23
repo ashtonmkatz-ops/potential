@@ -6,8 +6,8 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta http-equiv="Content-Security-Policy"
       content="
-        default-src 'self' https://cdn.jsdelivr.net;
-        script-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net https://www.youtube.com https://www.youtube-nocookie.com;
+        default-src 'self' https://fastly.jsdelivr.net;
+        script-src 'self' 'unsafe-inline' https://fastly.jsdelivr.net https://www.youtube.com https://www.youtube-nocookie.com;
         style-src 'self' 'unsafe-inline';
         img-src 'self'
                 https://i.ytimg.com
@@ -20,10 +20,11 @@
                 https://invidious.projectsegfau.com
                 https://invidious.privacydev.net
                 https://inv.vern.cc
+                https://fastly.jsdelivr.net
                 data:;
         frame-src https://www.youtube.com https://www.youtube-nocookie.com;
         connect-src 'self'
-                     https://cdn.jsdelivr.net
+                     https://fastly.jsdelivr.net
                      https://www.youtube.com
                      https://www.youtube-nocookie.com
                      https://invidious.flokinet.to
@@ -31,10 +32,6 @@
                      https://invidious.privacydev.net
                      https://inv.vern.cc;
       ">
-
-
-
-
 
 <title>GiggleTube</title>
 
