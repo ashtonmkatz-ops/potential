@@ -1,15 +1,40 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta http-equiv="Content-Security-Policy"
-        content="default-src 'self';
-                 frame-src https://www.youtube-nocookie.com https://www.youtube.com;
-                 script-src 'self' 'unsafe-inline' https://www.youtube.com https://www.youtube-nocookie.com;
-                 connect-src https://www.youtube.com https://www.youtube-nocookie.com;
-                 img-src 'self' https://i.ytimg.com data:;
-                 style-src 'self' 'unsafe-inline';">
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta http-equiv="Content-Security-Policy"
+      content="
+        default-src 'self' https://cdn.jsdelivr.net;
+        script-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net https://www.youtube.com https://www.youtube-nocookie.com;
+        style-src 'self' 'unsafe-inline';
+        img-src 'self'
+                https://i.ytimg.com
+                https://yt3.ggpht.com
+                https://yt4.ggpht.com
+                https://lh3.googleusercontent.com
+                https://ytimg.googleusercontent.com
+                https://ytimg.l.google.com
+                https://invidious.flokinet.to
+                https://invidious.projectsegfau.com
+                https://invidious.privacydev.net
+                https://inv.vern.cc
+                data:;
+        frame-src https://www.youtube.com https://www.youtube-nocookie.com;
+        connect-src 'self'
+                     https://cdn.jsdelivr.net
+                     https://www.youtube.com
+                     https://www.youtube-nocookie.com
+                     https://invidious.flokinet.to
+                     https://invidious.projectsegfau.com
+                     https://invidious.privacydev.net
+                     https://inv.vern.cc;
+      ">
+
+
+
+
+
 <title>GiggleTube</title>
 
 <style>
@@ -391,7 +416,8 @@
 const INV_INSTANCES = [
     "https://invidious.flokinet.to/api/v1",
     "https://invidious.projectsegfau.com/api/v1", 
-    "https://invidious.privacydev.net/api/v1"
+    "https://invidious.privacydev.net/api/v1",
+    "https://inv.vern.cc/api/v1"
 ];
 let FEED_TOPICS = [
     "splatoon",
