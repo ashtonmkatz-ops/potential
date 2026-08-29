@@ -465,23 +465,43 @@ window.onclick = (e) => {
 };
 
 
+
+
+
+let LAST_INSTANCE = null;
+
 async function fetchFromInvidious(endpoint) {
     for (const base of INV_INSTANCES) {
         try {
             const response = await fetch(base + endpoint);
             if (!response.ok) throw new Error("Bad response");
-            console.log("Using instance:", base);
+
+            LAST_INSTANCE = base;   // ← store the instance used
             return await response.json();
         } catch (err) {
             console.warn("Instance failed:", base, err);
         }
     }
 
-    console.error("All instances failed — using emergency fallback");
-
     const emergency = "https://invidious.flokinet.to/api/v1";
+    LAST_INSTANCE = emergency;
     const response = await fetch(emergency + endpoint);
     return await response.json();
+}
+
+function normalizeThumbnail(url, videoId) {
+  
+const thumbnailURL = LAST_INSTANCE.replace(/\/api\/v1\/?$/, "");
+
+    if (!url) {
+        return `${thumbnailURL}/vi/${videoId}/mqdefault.jpg`;
+    }
+
+    if (url.startsWith("http")) {
+        return url;
+    }
+
+    return `${thumbnailURL}${url.startsWith("/") ? url : "/" + url}`;
 }
 
 function watchVideo(id) {
@@ -649,8 +669,7 @@ async function loadBaselineFeed(isRefresh = false) {
         id: v.videoId,
         title: v.title || "Untitled",
         author: v.author || "Unknown",
-        thumbnail: v.videoThumbnails?.[0]?.url ||
-            `https://i.ytimg.com/vi/${v.videoId}/mqdefault.jpg`,
+        thumbnail: normalizeThumbnail(v.videoThumbnails?.[0]?.url, v.videoId),
         lengthSeconds: length,
         category,
         finalScore: score
@@ -751,8 +770,7 @@ async function executeLiveSearch() {
                     id: v.videoId,
                     title: v.title,
                     author: v.author,
-                    thumbnail: v.videoThumbnails?.[0]?.url ||
-                        `https://i.ytimg.com/vi/${v.videoId}/mqdefault.jpg`,
+                    thumbnail: normalizeThumbnail(v.videoThumbnails?.[0]?.url, v.videoId),
                     lengthSeconds: v.lengthSeconds || 0,
                     category,
                     finalScore: scoreVideo({ title: v.title, category, lengthSeconds: v.lengthSeconds }, query)
