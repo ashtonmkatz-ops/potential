@@ -37,16 +37,16 @@
 
 <style>
     body { font-family: Arial, sans-serif; background: #0f0f0f; color: #f1f1f1; padding: 20px; margin: 0; }
-    h1 { color: #ff0000; font-size: 24px; margin-bottom: 5px; }
+    h1 { color: #00aeff; font-size: 24px; margin-bottom: 5px; }
     .subtitle { color: #888; font-size: 14px; margin-bottom: 25px; }
 
     .search-container { display: flex; gap: 10px; max-width: 600px; margin-bottom: 25px; }
     .search-input { flex: 1; padding: 12px; background: #1f1f1f; border: 1px solid #333; border-radius: 6px; color: white; font-size: 14px; }
-    .search-btn { padding: 12px 24px; background: #ff0000; color: white; border: none; font-weight: bold; border-radius: 6px; cursor: pointer; }
+    .search-btn { padding: 12px 24px; background: #00aeff; color: white; border: none; font-weight: bold; border-radius: 6px; cursor: pointer; }
 
     .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 24px; }
-    .card { background: #1f1f1f; border-radius: 12px; overflow: hidden; padding: 12px; border: 1px solid #2d2d2d; transition: transform 0.2s; }
-    .card:hover { transform: translateY(-4px); border-color: #ff0000; }
+    .card { background: #1f1f1f; border-radius: 12px; overflow: hidden; padding: 12px; border: 1px solid #00aeff; transition: transform 0.2s; }
+    .card:hover { transform: translateY(-4px); border-color: #00aeff; }
 
     .thumb-container { position: relative; width: 100%; aspect-ratio: 16/9; background: #000; border-radius: 8px; overflow: hidden; }
     img { width: 100%; height: 100%; object-fit: cover; }
@@ -54,7 +54,7 @@
     h3 { font-size: 14px; margin: 12px 0 6px; line-height: 1.4; max-height: 40px; overflow: hidden; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; }
 
     .meta { font-size: 12px; color: #aaa; margin-bottom: 12px; }
-    .score-tag { background: rgba(255,0,0,0.15); color: #ff4444; padding: 4px 8px; border-radius: 4px; font-size: 11px; font-weight: bold; display: inline-block; margin-bottom: 8px; }
+    .score-tag { background: rgba(255,0,0,0.15); color: #00aeff; padding: 4px 8px; border-radius: 4px; font-size: 11px; font-weight: bold; display: inline-block; margin-bottom: 8px; }
 
     .button-row {
   display: flex;
@@ -76,7 +76,7 @@
 
 .copy-btn:hover,
 .watch-btn:hover {
-  background: #ff0000;
+  background: #027cb5;
 }
 
     /* Info Button */
@@ -84,7 +84,7 @@
   position: fixed;
   top: 15px;
   right: 15px;
-  background: #ff0000;
+  background: #2d2d2d;
   color: white;
   font-size: 20px;
   padding: 7px 8px;
@@ -94,7 +94,7 @@
   transition: background 0.2s;
 }
 #infoButton:hover {
-  background: #cc0000;
+  background: #027cb5;
 }
 
 /* Modal Background */
@@ -154,7 +154,7 @@
   padding: 12px 20px;
   background: #2d2d2d;
   color: white;
-  border: 1px solid #ff0000;
+  border: 1px solid #00aeff;
   border-radius: 6px;
   cursor: pointer;
   font-size: 20px;
@@ -168,7 +168,7 @@
 }
 
 #refreshBtn:hover {
-  background: #ff0000;
+  background: #027cb5;
   color: white;
   transform: translateY(-2px);
 }
@@ -178,7 +178,7 @@
   padding: 12px 20px;
   background: #2d2d2d;
   color: white;
-  border: 1px solid #ff0000;
+  border: 1px solid #00aeff;
   border-radius: 6px;
   cursor: pointer;
   font-size: 14px;
@@ -186,7 +186,7 @@
 }
 
 #searchBtn:hover {
-  background: #ff0000;
+  background: #027cb5;
   color: white;
   transform: translateY(-2px);
 }
@@ -195,7 +195,7 @@
   padding: 12px 20px;
   background: #2d2d2d;
   color: white;
-  border: 1px solid #ff0000;
+  border: 1px solid #00aeff;
   border-radius: 6px;
   cursor: pointer;
   font-size: 14px;
@@ -204,7 +204,7 @@
 }
 
 #refresh:hover {
-  background: #ff0000;
+  background: #027cb5;
   color: white;
   transform: translateY(-2px);
 }
