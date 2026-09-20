@@ -7,8 +7,14 @@
 <meta http-equiv="Content-Security-Policy"
       content="
         default-src 'self' https://fastly.jsdelivr.net;
-        script-src 'self' 'unsafe-inline' https://fastly.jsdelivr.net https://www.youtube.com https://www.youtube-nocookie.com;
+
+        script-src 'self' 'unsafe-inline'
+                   https://fastly.jsdelivr.net
+                   https://www.youtube.com
+                   https://www.youtube-nocookie.com;
+
         style-src 'self' 'unsafe-inline';
+
         img-src 'self'
                 https://i.ytimg.com
                 https://yt3.ggpht.com
@@ -16,22 +22,18 @@
                 https://lh3.googleusercontent.com
                 https://ytimg.googleusercontent.com
                 https://ytimg.l.google.com
-                https://invidious.flokinet.to
-                https://invidious.projectsegfau.com
-                https://invidious.privacydev.net
-                https://inv.vern.cc
                 https://fastly.jsdelivr.net
                 data:;
+
         frame-src https://www.youtube.com https://www.youtube-nocookie.com;
+
         connect-src 'self'
                      https://fastly.jsdelivr.net
+                     https://www.googleapis.com
                      https://www.youtube.com
-                     https://www.youtube-nocookie.com
-                     https://invidious.flokinet.to
-                     https://invidious.projectsegfau.com
-                     https://invidious.privacydev.net
-                     https://inv.vern.cc;
+                     https://www.youtube-nocookie.com;
       ">
+
 
 <title>GiggleTube</title>
 
