@@ -413,12 +413,6 @@
    MULTI‑INSTANCE FALLBACK SYSTEM
    ============================================================ */
 
-const INV_INSTANCES = [
-    "https://invidious.flokinet.to/api/v1",
-    "https://invidious.projectsegfau.com/api/v1", 
-    "https://invidious.privacydev.net/api/v1",
-    "https://inv.vern.cc/api/v1"
-];
 let FEED_TOPICS = [
     "splatoon",
     "failboat",
@@ -470,8 +464,6 @@ window.onclick = (e) => {
 
 
 
-let LAST_INSTANCE = null;
-
 // ---------------------------------------------
 // 1. ISO8601 duration parser (YouTube format)
 // ---------------------------------------------
@@ -492,29 +484,28 @@ async function fetchFromYoutube(query) {
     try {
         // Step 1: Search for videos
         const searchUrl =
-            `https://www.googleapis.com/youtube/v3/search` +
-            `?part=snippet&type=video&q=${encodeURIComponent(query)}` +
-            `&maxResults=25&key=${API_KEY}`;
+    `https://www.googleapis.com/youtube/v3/search` +
+    `?part=snippet&type=video&q=${encodeURIComponent(query)}` +
+    `&maxResults=25&key=${API_KEY}`;
 
-        
+const searchRes = await fetch(searchUrl);
 
+if (!searchRes.ok) {
+    console.error("YouTube SEARCH error:", searchRes.status, searchRes.statusText);
+    console.error("Search URL:", searchUrl);
+    console.error("Search response:", await searchRes.text());
+    return [];
+}
 
+// ⭐ THIS LINE WAS MISSING ⭐
+const searchJson = await searchRes.json();
 
-        const searchRes = await fetch(searchUrl);
+if (!searchJson.items || searchJson.items.length === 0) {
+    console.warn("YouTube returned NO items for:", query);
+    console.warn("Full search JSON:", searchJson);
+    return [];
+}
 
-        if (!searchRes.ok) {
-            console.error("YouTube SEARCH error:", searchRes.status, searchRes.statusText);
-            console.error("Search URL:", searchUrl);
-            console.error("Search response:", await searchRes.text());
-            return [];
-        }
-
-        if (!searchJson.items || searchJson.items.length === 0) {
-            console.warn("YouTube returned NO items for:", query);
-            console.warn("Full search JSON:", searchJson);
-            return [];
-        }
-        console.log(searchJson)
 
         // Extract video IDs
         const ids = searchJson.items.map(i => i.id.videoId).join(",");
@@ -566,20 +557,18 @@ if (!detailsJson.items) {
     }
 }
 
-function normalizeThumbnail(url, videoId) {
-  
-const thumbnailURL = LAST_INSTANCE.replace(/\/api\/v1\/?$/, "");
+function normalizeThumbnail(thumbnails, videoId) {
+    // Prefer high-quality thumbnails if available
+    if (thumbnails?.maxres?.url) return thumbnails.maxres.url;
+    if (thumbnails?.standard?.url) return thumbnails.standard.url;
+    if (thumbnails?.high?.url) return thumbnails.high.url;
+    if (thumbnails?.medium?.url) return thumbnails.medium.url;
+    if (thumbnails?.default?.url) return thumbnails.default.url;
 
-    if (!url) {
-        return `${thumbnailURL}/vi/${videoId}/mqdefault.jpg`;
-    }
-
-    if (url.startsWith("http")) {
-        return url;
-    }
-
-    return `${thumbnailURL}${url.startsWith("/") ? url : "/" + url}`;
+    // Fallback: construct a safe ytimg URL
+    return `https://i.ytimg.com/vi/${videoId}/hqdefault.jpg`;
 }
+
 
 function watchVideo(id) {
     const frame = document.getElementById("playerFrame");
