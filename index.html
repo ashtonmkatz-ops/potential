@@ -470,23 +470,88 @@ window.onclick = (e) => {
 
 let LAST_INSTANCE = null;
 
-async function fetchFromInvidious(endpoint) {
-    for (const base of INV_INSTANCES) {
-        try {
-            const response = await fetch(base + endpoint);
-            if (!response.ok) throw new Error("Bad response");
+// ---------------------------------------------
+// 1. ISO8601 duration parser (YouTube format)
+// ---------------------------------------------
+function parseISO8601Duration(iso) {
+    const match = iso.match(/PT(?:(\d+)H)?(?:(\d+)M)?(?:(\d+)S)?/);
+    const hours = parseInt(match?.[1] || 0);
+    const minutes = parseInt(match?.[2] || 0);
+    const seconds = parseInt(match?.[3] || 0);
+    return hours * 3600 + minutes * 60 + seconds;
+}
 
-            LAST_INSTANCE = base;   // ← store the instance used
-            return await response.json();
-        } catch (err) {
-            console.warn("Instance failed:", base, err);
+// ---------------------------------------------
+// 2. YouTube API search + details fetcher
+// ---------------------------------------------
+async function fetchFromYouTube(query) {
+    const API_KEY = "AIzaSyD1OHpW5DBXYGTVh0dQ6MMWiiXSXgPWL94";
+
+    try {
+        // Step 1: Search for videos
+        const searchUrl =
+            `https://www.googleapis.com/youtube/v3/search` +
+            `?part=snippet&type=video&q=${encodeURIComponent(query)}` +
+            `&maxResults=25&key=${API_KEY}`;
+
+        const searchRes = await fetch(searchUrl);
+
+        if (!searchRes.ok) {
+            console.error("YouTube SEARCH error:", searchRes.status, searchRes.statusText);
+            console.error("Search URL:", searchUrl);
+            console.error("Search response:", await searchRes.text());
+            return [];
         }
-    }
 
-    const emergency = "https://invidious.flokinet.to/api/v1";
-    LAST_INSTANCE = emergency;
-    const response = await fetch(emergency + endpoint);
-    return await response.json();
+        const searchJson = await searchRes.json();
+
+        if (!searchJson.items || searchJson.items.length === 0) {
+            console.warn("YouTube returned NO items for:", query);
+            console.warn("Full search JSON:", searchJson);
+            return [];
+        }
+
+        // Extract video IDs
+        const ids = searchJson.items.map(i => i.id.videoId).join(",");
+
+        // Step 2: Fetch durations + content details
+        const detailsUrl =
+            `https://www.googleapis.com/youtube/v3/videos` +
+            `?part=contentDetails&id=${ids}&key=${API_KEY}`;
+
+        const detailsRes = await fetch(detailsUrl);
+
+        if (!detailsRes.ok) {
+            console.error("YouTube DETAILS error:", detailsRes.status, detailsRes.statusText);
+            console.error("Details URL:", detailsUrl);
+            console.error("Details response:", await detailsRes.text());
+            return [];
+        }
+
+        const detailsJson = await detailsRes.json();
+
+        // Step 3: Merge search + details into Invidious‑like objects
+        return searchJson.items.map(item => {
+            const detail = detailsJson.items.find(d => d.id === item.id.videoId);
+
+            return {
+                type: "video",
+                videoId: item.id.videoId,
+                title: item.snippet.title,
+                author: item.snippet.channelTitle,
+                videoThumbnails: [
+                    { url: item.snippet.thumbnails.high.url }
+                ],
+                lengthSeconds: detail
+                    ? parseISO8601Duration(detail.contentDetails.duration)
+                    : 0
+            };
+        });
+
+    } catch (err) {
+        console.error("fetchFromYoutube FATAL error:", err);
+        return [];
+    }
 }
 
 function normalizeThumbnail(url, videoId) {
@@ -617,15 +682,18 @@ async function loadBaselineFeed(isRefresh = false) {
     try {
         // 1. Run all searches in parallel
         const searchPromises = FEED_TOPICS.map(async topic => {
-            try {
-                console.log("Searching topic:", topic);
-                const res = await fetchFromInvidious(`/search?q=${encodeURIComponent(topic)}`);
-                return res.filter(v => v.type === "video");
-            } catch (e) {
-                console.error("Failed topic:", topic, e);
-                return []; // fail soft for this topic
-            }
-        });
+    try {
+        console.log("Searching topic:", topic);
+
+        // FIXED: pass the topic directly, not an endpoint
+        const res = await fetchFromYoutube(topic);
+
+        return res.filter(v => v.type === "video");
+    } catch (e) {
+        console.error("Failed topic:", topic, e);
+        return []; // fail soft for this topic
+    }
+});
 
         const resultsByTopic = await Promise.all(searchPromises);
 
@@ -760,7 +828,7 @@ async function executeLiveSearch() {
     grid.innerHTML = "<p>Loading...</p>";
 
     try {
-        const results = await fetchFromInvidious(`/search?q=${encodeURIComponent(query)}`);
+        const results = await fetchFromYoutube(encodeURIComponent(query));
 
         const processed = results
             .filter(v => v.type === "video")
