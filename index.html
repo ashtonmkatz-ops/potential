@@ -484,7 +484,7 @@ function parseISO8601Duration(iso) {
 // ---------------------------------------------
 // 2. YouTube API search + details fetcher
 // ---------------------------------------------
-async function fetchFromYouTube(query) {
+async function fetchFromYoutube(query) {
     const API_KEY = "AIzaSyD1OHpW5DBXYGTVh0dQ6MMWiiXSXgPWL94";
 
     try {
@@ -493,6 +493,10 @@ async function fetchFromYouTube(query) {
             `https://www.googleapis.com/youtube/v3/search` +
             `?part=snippet&type=video&q=${encodeURIComponent(query)}` +
             `&maxResults=25&key=${API_KEY}`;
+
+        
+
+
 
         const searchRes = await fetch(searchUrl);
 
@@ -503,13 +507,12 @@ async function fetchFromYouTube(query) {
             return [];
         }
 
-        const searchJson = await searchRes.json();
-
         if (!searchJson.items || searchJson.items.length === 0) {
             console.warn("YouTube returned NO items for:", query);
             console.warn("Full search JSON:", searchJson);
             return [];
         }
+        console.log(searchJson)
 
         // Extract video IDs
         const ids = searchJson.items.map(i => i.id.videoId).join(",");
@@ -520,15 +523,22 @@ async function fetchFromYouTube(query) {
             `?part=contentDetails&id=${ids}&key=${API_KEY}`;
 
         const detailsRes = await fetch(detailsUrl);
+const detailsJson = await detailsRes.json();
 
-        if (!detailsRes.ok) {
-            console.error("YouTube DETAILS error:", detailsRes.status, detailsRes.statusText);
-            console.error("Details URL:", detailsUrl);
-            console.error("Details response:", await detailsRes.text());
-            return [];
-        }
+if (!detailsJson.items) {
+    console.warn("No details returned for:", ids);
+    return searchJson.items.map(item => ({
+        type: "video",
+        videoId: item.id.videoId,
+        title: item.snippet.title,
+        author: item.snippet.channelTitle,
+        videoThumbnails: [
+            { url: item.snippet.thumbnails.high.url }
+        ],
+        lengthSeconds: 0 // fallback
+    }));
+}
 
-        const detailsJson = await detailsRes.json();
 
         // Step 3: Merge search + details into Invidious‑like objects
         return searchJson.items.map(item => {
