@@ -486,7 +486,7 @@ async function fetchFromYoutube(query) {
         const searchUrl =
     `https://www.googleapis.com/youtube/v3/search` +
     `?part=snippet&type=video&q=${encodeURIComponent(query)}` +
-    `&maxResults=25&key=${API_KEY}`;
+    `&maxResults=50&key=${API_KEY}`;
 
 const searchRes = await fetch(searchUrl);
 
@@ -752,8 +752,6 @@ for (let i = processed.length - 1; i > 0; i--) {
     [processed[i], processed[j]] = [processed[j], processed[i]];
 }
 
-// Limit to 30 results
-processed = processed.slice(0, 50);
 
 
         // 5. Render
